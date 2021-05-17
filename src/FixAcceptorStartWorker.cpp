@@ -33,7 +33,7 @@ void FixAcceptorStartWorker::Execute () {
 void FixAcceptorStartWorker::HandleOKCallback () {
 	Nan::HandleScope scope;
 
-    v8::Local<v8::Function> fn = callback->GetFunction();
+    v8::Local<v8::Function> fn = Nan::GetFunction(callback).ToLocalChecked();
 	if(!(fn->IsUndefined() || fn->IsNull())) {
 		Local<Value> argv[] = {
 			Nan::Null()
