@@ -18,7 +18,7 @@ FixLoginResponse::FixLoginResponse() : Nan::ObjectWrap(){
 FixLoginResponse::~FixLoginResponse() {
 }
 
-void FixLoginResponse::Initialize(Handle<Object> target) {
+void FixLoginResponse::Initialize(Local<Object> target) {
   Nan::HandleScope scope;
 
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(FixLoginResponse::New);
@@ -33,7 +33,7 @@ void FixLoginResponse::Initialize(Handle<Object> target) {
   target->Set(Nan::New("FixLoginResponse").ToLocalChecked(), ctor->GetFunction(context));
 }
 
-Handle<Object> FixLoginResponse::wrapFixLoginResponse(FixLoginResponse* fixLoginResponse) {
+Local<Object> FixLoginResponse::wrapFixLoginResponse(FixLoginResponse* fixLoginResponse) {
 
 	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>();
 
@@ -42,7 +42,7 @@ Handle<Object> FixLoginResponse::wrapFixLoginResponse(FixLoginResponse* fixLogin
 
 	Nan::SetPrototypeMethod(ctor, "done", done);
 
-	Handle<Object> obj = ctor->InstanceTemplate()->NewInstance();
+	Local<Object> obj = ctor->InstanceTemplate()->NewInstance();
 	//obj->SetInternalField(0, Nan::New<External>(fixLoginResponse));
 
 	fixLoginResponse->Wrap(obj);

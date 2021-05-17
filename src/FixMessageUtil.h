@@ -27,12 +27,12 @@ public:
 
 		Local<v8::Object> header = Local<v8::Object>::Cast(msg->Get(Nan::New<String>("header").ToLocalChecked()));
 		FIX::Header &msgHeader = message->getHeader();
-		Local<v8::Array> headerTags = header->GetPropertyNames();
+		Local<v8::Array> headerTags = header->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 		for(int i=0; i < (int)headerTags->Length(); i++) {
-			String::Utf8Value value(header->Get(headerTags->Get(i))->ToString());
+			String::Utf8Value value(Nan::To<v8::String>(header->Get(headerTags->Get(i))).ToLocalChecked());
 			msgHeader.setField(
-					headerTags->Get(i)->Int32Value(),
+                    Nan::To<int32_t>(headerTags->Get(i)).ToChecked(),
 					std::string(*value)
 			);
 		}
@@ -46,14 +46,14 @@ public:
 
 			Local<v8::Object> tags = Local<v8::Object>::Cast(msg->Get(tagsKey));
 
-			Local<v8::Array> msgTags = tags->GetPropertyNames();
+			Local<v8::Array> msgTags = tags->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 			for(int i=0; i < (int)msgTags->Length(); i++) {
 				String::Utf8Value value(tags->Get(msgTags->Get(i))->ToString());
 
 
 				map->setField(
-						msgTags->Get(i)->Int32Value(),
+						Nan::To<int32_t>(msgTags->Get(i)).ToChecked(),
 						std::string(*value)
 				);
 			}
@@ -76,7 +76,7 @@ public:
 			for(int i = 0; i < (int) groups->Length(); i++) {
 
 
-				Local<v8::Object> groupObj = groups->Get(i)->ToObject();
+				Local<v8::Object> groupObj = groups->Get(i)->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
 
 				Local<v8::String> delimKey = Nan::New<v8::String>("delim").ToLocalChecked();
 				Local<v8::String> indexKey = Nan::New<v8::String>("index").ToLocalChecked();
@@ -100,15 +100,15 @@ public:
 
 				for (int j = 0; j < (int) groupEntries->Length(); j++) {
 
-					Local<v8::Object> entry = groupEntries->Get(j)->ToObject();
+					Local<v8::Object> entry = groupEntries->Get(j)->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
 
 					Local<v8::String> tagKey = Nan::New<v8::String>("tags").ToLocalChecked();
 
 					if(entry->Has(groupKey) || entry->Has(tagKey)) {
 
 						FIX::Group* group = new FIX::Group(
-							groupObj->Get(indexKey)->ToInteger()->Value(),
-							groupObj->Get(delimKey)->ToInteger()->Value());
+                            Nan::To<int>(groupObj->Get(indexKey)).ToChecked(),
+                            Nan::To<int>(groupObj->Get(delimKey)).ToChecked());
 
 						addFixTags(group, entry);
 						addFixGroups(group, entry);
@@ -120,12 +120,12 @@ public:
 					} else {
 
 						FIX::Group* group = new FIX::Group(
-							groupObj->Get(indexKey)->ToInteger()->Value(),
-							groupObj->Get(delimKey)->ToInteger()->Value());
+                                Nan::To<int>(groupObj->Get(indexKey)).ToChecked(),
+                                Nan::To<int>(groupObj->Get(delimKey)).ToChecked());
 
 						// compat for old, non-nested format
 
-						Local<v8::Array> entryTags = entry->GetPropertyNames();
+						Local<v8::Array> entryTags = entry->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 						for(int k=0; k < (int) entryTags->Length(); k++) {
 
@@ -156,7 +156,7 @@ public:
 		if(msg->Has(trailerKey)) {
 
 			Local<v8::Object> trailer = Local<v8::Object>::Cast(msg->Get(trailerKey));
-			Local<v8::Array> trailerTags = trailer->GetPropertyNames();
+			Local<v8::Array> trailerTags = trailer->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 			for(int i=0; i<(int)trailerTags->Length(); i++) {
 
@@ -230,7 +230,7 @@ public:
 
 		for(FIX::FieldMap::g_iterator it = map->g_begin(); it != map->g_end(); ++it) {
 			std::vector< FIX::FieldMap* > groupVector = it->second;
-			Handle<v8::Array> groupList = Nan::New<v8::Array>(groupVector.size());
+			Local<v8::Array> groupList = Nan::New<v8::Array>(groupVector.size());
 			int i = 0;
 
 			for(std::vector< FIX::FieldMap* >::iterator v_it = groupVector.begin(); v_it != groupVector.end(); ++v_it) {
