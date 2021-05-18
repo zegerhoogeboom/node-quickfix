@@ -19,7 +19,7 @@ class FixSessionAsyncWorker : public Nan::AsyncWorker {
 		void HandleOKCallback () {
 			Nan::HandleScope scope;
 
-            v8::Local<v8::Function> fn = Nan::GetFunction(callback).ToLocalChecked();
+            v8::Local<v8::Function> fn = callback->GetFunction();
 	        if(!(fn->IsUndefined() || fn->IsNull())) {
 				Local<Value> argv[] = {
 					Nan::Null()
@@ -238,7 +238,7 @@ NAN_SETTER(FixSession::setSenderSeqNum) {
 	Nan::HandleScope scope;
 	if(value->IsNumber()) {
 		FixSession* instance = Nan::ObjectWrap::Unwrap<FixSession>(info.This());
-		instance->mSession->setNextSenderMsgSeqNum(Nan::To<v8::Uint32>(value).ToChecked());
+		instance->mSession->setNextSenderMsgSeqNum(value->Int32Value(Nan::GetCurrentContext()).FromJust());
 	}
 }
 
@@ -252,7 +252,7 @@ NAN_SETTER(FixSession::setTargetSeqNum) {
 	Nan::HandleScope scope;
 	if(value->IsNumber()) {
 		FixSession* instance = Nan::ObjectWrap::Unwrap<FixSession>(info.This());
-		instance->mSession->setNextTargetMsgSeqNum(Nan::To<v8::Uint32>(value).ToChecked());
+		instance->mSession->setNextTargetMsgSeqNum(value->Int32Value(Nan::GetCurrentContext()).FromJust());
 	}
 }
 
