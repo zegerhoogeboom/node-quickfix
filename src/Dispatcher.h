@@ -47,8 +47,8 @@ class Dispatcher {
 
             std::vector< Local<Value> > arguments;
             if(event->logon != NULL) {
-                callback = Nan::GetFunction(event->logon).ToLocalChecked();
-                Handle<Object> jsLogonResponse = FixLoginResponse::wrapFixLoginResponse(event->logonResponse);
+                callback = event->logon->GetFunction();
+                Local<Object> jsLogonResponse = FixLoginResponse::wrapFixLoginResponse(event->logonResponse);
                 arguments.push_back(jsLogonResponse);
             }
 
