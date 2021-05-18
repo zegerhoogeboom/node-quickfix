@@ -30,8 +30,8 @@ public:
 		Local<v8::Array> headerTags = header->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 		for(int i=0; i < (int)headerTags->Length(); i++) {
-			String::Utf8Value value(Nan::To<v8::String>(header->Get(headerTags->Get(i))).ToLocalChecked());
-			msgHeader.setField(
+            String::Utf8Value value(Isolate::GetCurrent(), Nan::To<v8::String>(header->Get(headerTags->Get(i))).ToLocalChecked());
+            msgHeader.setField(
                     Nan::To<int32_t>(headerTags->Get(i)).ToChecked(),
 					std::string(*value)
 			);
@@ -42,15 +42,14 @@ public:
 
 		Local<v8::String> tagsKey = Nan::New<v8::String>("tags").ToLocalChecked();
 
-		if(msg->Has(tagsKey)) {
+		if(msg->Has(Nan::GetCurrentContext(), tagsKey).ToChecked()) {
 
 			Local<v8::Object> tags = Local<v8::Object>::Cast(msg->Get(tagsKey));
 
 			Local<v8::Array> msgTags = tags->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 			for(int i=0; i < (int)msgTags->Length(); i++) {
-				String::Utf8Value value(tags->Get(msgTags->Get(i))->ToString());
-
+			    String::Utf8Value value(Isolate::GetCurrent(), Nan::To<v8::String>(tags->Get(msgTags->Get(i))).ToLocalChecked());
 
 				map->setField(
 						Nan::To<int32_t>(msgTags->Get(i)).ToChecked(),
@@ -68,7 +67,7 @@ public:
 		// TODO: add type checking and dev-helpful error throwing
 
 
-		if(msg->Has(groupKey)) {
+		if(msg->Has(Nan::GetCurrentContext(), groupKey).ToChecked()) {
 
 
 			Local<v8::Array> groups = Local<v8::Array>::Cast(msg->Get(groupKey));
@@ -81,18 +80,18 @@ public:
 				Local<v8::String> delimKey = Nan::New<v8::String>("delim").ToLocalChecked();
 				Local<v8::String> indexKey = Nan::New<v8::String>("index").ToLocalChecked();
 
-				if( ! groupObj->Has(indexKey)) {
+				if( ! groupObj->Has(Nan::GetCurrentContext(), indexKey).ToChecked()) {
 						Nan::ThrowError("no index property found on object");
 				}
 
-				if( ! groupObj->Has(delimKey)) {
+				if( ! groupObj->Has(Nan::GetCurrentContext(), delimKey).ToChecked()) {
 						Nan::ThrowError("no delim property found on object");
 				}
 
 
 				Local<v8::String> entriesKey = Nan::New<v8::String>("entries").ToLocalChecked();
 
-				if( ! groupObj->Has(entriesKey)) {
+				if( ! groupObj->Has(Nan::GetCurrentContext(), entriesKey).ToChecked()) {
 						Nan::ThrowError("no entries property found on object");
 				}
 
@@ -104,7 +103,7 @@ public:
 
 					Local<v8::String> tagKey = Nan::New<v8::String>("tags").ToLocalChecked();
 
-					if(entry->Has(groupKey) || entry->Has(tagKey)) {
+					if(entry->Has(Nan::GetCurrentContext(), groupKey).ToChecked() || entry->Has(Nan::GetCurrentContext(), tagKey).ToChecked()) {
 
 						FIX::Group* group = new FIX::Group(
                             Nan::To<int>(groupObj->Get(indexKey)).ToChecked(),
@@ -129,9 +128,9 @@ public:
 
 						for(int k=0; k < (int) entryTags->Length(); k++) {
 
-							Local<v8::String> prop = entryTags->Get(k)->ToString();
-							String::Utf8Value keyStr(prop->ToString());
-							String::Utf8Value valueStr(entry->Get(prop)->ToString());
+							Local<v8::String> prop = entryTags->Get(k)->ToString(Nan::GetCurrentContext()).ToLocalChecked();
+                            String::Utf8Value keyStr(Isolate::GetCurrent(), Nan::To<v8::String>(prop).ToLocalChecked());
+                            String::Utf8Value valueStr(Isolate::GetCurrent(), Nan::To<v8::String>(entry->Get(prop)).ToLocalChecked());
 
 							group->setField(atoi(std::string(*keyStr).c_str()), std::string(*valueStr));
 
@@ -153,17 +152,16 @@ public:
 
 		Local<v8::String> trailerKey = Nan::New<v8::String>("trailer").ToLocalChecked();
 
-		if(msg->Has(trailerKey)) {
+		if(msg->Has(Nan::GetCurrentContext(), trailerKey).ToChecked()) {
 
 			Local<v8::Object> trailer = Local<v8::Object>::Cast(msg->Get(trailerKey));
 			Local<v8::Array> trailerTags = trailer->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 			for(int i=0; i<(int)trailerTags->Length(); i++) {
 
-				Local<v8::String> prop = trailerTags->Get(i)->ToString();
-				String::Utf8Value keyStr(prop->ToString());
-
-				String::Utf8Value valueStr(trailer->Get(prop)->ToString());
+				Local<v8::String> prop = trailerTags->Get(i)->ToString(Nan::GetCurrentContext()).ToLocalChecked();
+                String::Utf8Value keyStr(Isolate::GetCurrent(), Nan::To<v8::String>(prop).ToLocalChecked());
+                String::Utf8Value valueStr(Isolate::GetCurrent(), Nan::To<v8::String>(trailer->Get(prop)).ToLocalChecked());
 
 				msgTrailer.setField(atoi(std::string(*keyStr).c_str()), std::string(*valueStr));
 
@@ -281,9 +279,9 @@ public:
 	}
 
 	static FIX::SessionID jsToSessionId(Local<v8::Object> sessionId) {
-		String::Utf8Value beginString(sessionId->Get(Nan::New<v8::String>("beginString").ToLocalChecked())->ToString());
-		String::Utf8Value senderCompId(sessionId->Get(Nan::New<v8::String>("senderCompID").ToLocalChecked())->ToString());
-		String::Utf8Value targetCompId(sessionId->Get(Nan::New<v8::String>("targetCompID").ToLocalChecked())->ToString());
+        String::Utf8Value beginString(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::New<v8::String>("beginString").ToLocalChecked())).ToLocalChecked());
+        String::Utf8Value senderCompId(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::New<v8::String>("senderCompID").ToLocalChecked())).ToLocalChecked());
+        String::Utf8Value targetCompId(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::New<v8::String>("targetCompID").ToLocalChecked())).ToLocalChecked());
 		return FIX::SessionID(std::string(*beginString),
 				std::string(*senderCompId),
 				std::string(*targetCompId));

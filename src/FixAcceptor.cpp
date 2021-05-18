@@ -69,7 +69,7 @@ NAN_METHOD(FixAcceptor::New) {
 	Local<Object> options;
 	FixAcceptor *acceptor = NULL;
 
-  Local<Context> context = Nan::GetCurrentContext();
+    Local<Context> context = Nan::GetCurrentContext();
 
 	if(!(info[1]->IsUndefined() || info[1]->IsNull())){
 		hasOptions = true;
@@ -122,25 +122,23 @@ NAN_METHOD(FixAcceptor::New) {
 	  acceptor->mCallbackRegistry.insert(*callbackName);
 	}
 
-	if(hasOptions){
-		Local<String> logonProviderKey =  Nan::New<String>("logonProvider").ToLocalChecked();
-		if(options->Has(context, logonProviderKey).FromJust()) {
-			acceptor->mFixLoginProvider = Nan::ObjectWrap::Unwrap<FixLoginProvider>(options->Get(context, logonProviderKey).ToLocalChecked());
-			acceptor->mFixApplication->setLogonProvider(acceptor->mFixLoginProvider);
-		}
+    Local<String> logonProviderKey =  Nan::New<String>("logonProvider").ToLocalChecked();
+    if(options->Has(context, logonProviderKey).FromJust()) {
+        acceptor->mFixLoginProvider = Nan::ObjectWrap::Unwrap<FixLoginProvider>(options->Get(context, logonProviderKey).ToLocalChecked().As<v8::Object>());
+        acceptor->mFixApplication->setLogonProvider(acceptor->mFixLoginProvider);
+    }
 
-		Local<String> credentialsKey =  Nan::New<String>("credentials").ToLocalChecked();
+    Local<String> credentialsKey =  Nan::New<String>("credentials").ToLocalChecked();
 
-		if(options->Has(context, credentialsKey).FromJust()){
-			Local<Object> creds = options->Get(context, credentialsKey).ToLocalChecked();
-			fix_credentials* credentials = new fix_credentials;
-			Nan::Utf8String usernameStr(creds->Get(context, Nan::New<String>("username").ToLocalChecked()).ToLocalChecked());
-			Nan::Utf8String passwordStr(creds->Get(context, Nan::New<String>("password").ToLocalChecked()).ToLocalChecked());
-			credentials->username = std::string(*usernameStr);
-			credentials->password = std::string(*passwordStr);
-			acceptor->mFixApplication->setCredentials(credentials);
-		}
-	}
+    if(options->Has(context, credentialsKey).FromJust()){
+        Local<Object> creds = options->Get(context, credentialsKey).ToLocalChecked().As<v8::Object>();
+        fix_credentials* credentials = new fix_credentials;
+        Nan::Utf8String usernameStr(creds->Get(context, Nan::New<String>("username").ToLocalChecked()).ToLocalChecked());
+        Nan::Utf8String passwordStr(creds->Get(context, Nan::New<String>("password").ToLocalChecked()).ToLocalChecked());
+        credentials->username = std::string(*usernameStr);
+        credentials->password = std::string(*passwordStr);
+        acceptor->mFixApplication->setCredentials(credentials);
+    }
 
 	info.GetReturnValue().Set(info.This());
 }
@@ -229,6 +227,6 @@ NAN_METHOD(FixAcceptor::getSession) {
 
 	FIX::Session* session = instance->mAcceptor->getSession(FixMessageUtil::jsToSessionId(sessionId));
 
-	Handle<Object> jsSession(FixSession::wrapFixSession(session));
+	Local<Object> jsSession(FixSession::wrapFixSession(session));
 	info.GetReturnValue().Set(jsSession);
 }

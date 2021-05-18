@@ -48,7 +48,7 @@ class Dispatcher {
             std::vector< Local<Value> > arguments;
             if(event->logon != NULL) {
                 callback = event->logon->GetFunction();
-                Handle<Object> jsLogonResponse = FixLoginResponse::wrapFixLoginResponse(event->logonResponse);
+                Local<Object> jsLogonResponse = FixLoginResponse::wrapFixLoginResponse(event->logonResponse);
                 arguments.push_back(jsLogonResponse);
             }
 

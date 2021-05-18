@@ -54,7 +54,7 @@ void FixApplication::toAdmin( FIX::Message& message, const FIX::SessionID& sessi
 	FixApplication::dispatchEvent(std::string("toAdmin"), message, sessionID);
 }
 
-void FixApplication::fromAdmin( const FIX::Message& message, const FIX::SessionID& sessionID )
+void FixApplication::fromAdmin( const FIX::Message& message, const FIX::SessionID& sessionID ) throw()
 {
 	FixApplication::dispatchEvent(std::string("fromAdmin"), message, sessionID);
 
@@ -84,12 +84,12 @@ void FixApplication::fromAdmin( const FIX::Message& message, const FIX::SessionI
 
 }
 
-void FixApplication::toApp( FIX::Message& message, const FIX::SessionID& sessionID )
+void FixApplication::toApp( FIX::Message& message, const FIX::SessionID& sessionID ) throw()
 {
 	FixApplication::dispatchEvent(std::string("toApp"), message, sessionID);
 }
 
-void FixApplication::fromApp( const FIX::Message& message, const FIX::SessionID& sessionID )
+void FixApplication::fromApp( const FIX::Message& message, const FIX::SessionID& sessionID ) throw()
 {
 	FixApplication::dispatchEvent(std::string("fromApp"), message, sessionID);
 }
