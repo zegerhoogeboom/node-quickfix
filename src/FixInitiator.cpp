@@ -85,7 +85,7 @@ NAN_METHOD(FixInitiator::New) {
 		sessionSettings = FIX::SessionSettings(stream);
 	}
 
-  bool ssl = false;
+    bool ssl = false;
 	if (options->Has(context, sslKey).FromJust()) {
 	  ssl = Nan::To<bool>(options->Get(context, sslKey).ToLocalChecked()).FromJust();
 	}
@@ -112,18 +112,18 @@ NAN_METHOD(FixInitiator::New) {
 	  initiator->mCallbackRegistry.insert(*callbackName);
 	}
 
-	if(hasOptions){
-		Local<String> credentialsKey =  Nan::New<String>("credentials").ToLocalChecked();
-		if(options->Has(context, credentialsKey).FromJust()){
-			Local<Object> creds = options->Get(context, credentialsKey).ToLocalChecked().As<v8::Object>();
-			fix_credentials* credentials = new fix_credentials;
-			Nan::Utf8String usernameStr(creds->Get(context, Nan::New<String>("username").ToLocalChecked()).ToLocalChecked());
-			Nan::Utf8String passwordStr(creds->Get(context, Nan::New<String>("password").ToLocalChecked()).ToLocalChecked());
-			credentials->username = std::string(*usernameStr);
-			credentials->password = std::string(*passwordStr);
-			initiator->mFixApplication->setCredentials(credentials);
-		}
-	}
+    Local<String> credentialsKey =  Nan::New<String>("credentials").ToLocalChecked();
+    if(options->Has(context, credentialsKey).FromJust()){
+        Local<Object> creds = options->Get(context, credentialsKey).ToLocalChecked().As<v8::Object>();
+        fix_credentials* credentials = new fix_credentials;
+        Nan::Utf8String usernameStr(creds->Get(context, Nan::New<String>("username").ToLocalChecked()).ToLocalChecked());
+        Nan::Utf8String passwordStr(creds->Get(context, Nan::New<String>("password").ToLocalChecked()).ToLocalChecked());
+        Nan::Utf8String rawDataStr(creds->Get(context, Nan::New<String>("rawData").ToLocalChecked()).ToLocalChecked());
+        credentials->username = std::string(*usernameStr);
+        credentials->password = std::string(*passwordStr);
+        credentials->rawData = std::string(*rawDataStr);
+        initiator->mFixApplication->setCredentials(credentials);
+    }
 
 	info.GetReturnValue().Set(info.This());
 }
