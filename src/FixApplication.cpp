@@ -55,9 +55,6 @@ void FixApplication::toAdmin( FIX::Message& message, const FIX::SessionID& sessi
         }
 	}
 
-	message.setField(9009, "Y");
-
-
 	FixApplication::dispatchEvent(std::string("toAdmin"), message, sessionID);
 }
 
