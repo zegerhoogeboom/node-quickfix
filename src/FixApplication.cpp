@@ -51,6 +51,7 @@ void FixApplication::toAdmin( FIX::Message& message, const FIX::SessionID& sessi
 		}
 
         if (strcmp(mCredentials->rawData.c_str(), "") != 0) {
+            message.setField(95, std::to_string(mCredentials->rawData.length()));
             message.setField(96, mCredentials->rawData.c_str());
         }
 	}
