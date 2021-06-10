@@ -4,8 +4,8 @@ WORKDIR /app
 USER root
 RUN apt-get update -y && cd /tmp \
     && yes N | apt-get -y install ruby-full \
-    && curl -ssLO http://prdownloads.sourceforge.net/quickfix/quickfix-1.14.3.tar.gz \
-    && tar -xzf quickfix-1.14.3.tar.gz \
+    && curl -ssLO http://prdownloads.sourceforge.net/quickfix/quickfix-1.15.1.tar.gz \
+    && tar -xzf quickfix-1.15.1.tar.gz \
     && cd quickfix \
     && ./bootstrap \
     && ./configure \
