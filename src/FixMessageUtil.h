@@ -25,14 +25,17 @@ public:
 
 	static void addFixHeader(FIX::Message* message, Local<v8::Object> msg) {
 
-		Local<v8::Object> header = Local<v8::Object>::Cast(msg->Get(Nan::New<String>("header").ToLocalChecked()));
+		Local<v8::Object> header = Local<v8::Object>::Cast(msg->Get(Nan::GetCurrentContext(), Nan::New<String>("header").ToLocalChecked()).ToLocalChecked());
 		FIX::Header &msgHeader = message->getHeader();
 		Local<v8::Array> headerTags = header->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 		for(int i=0; i < (int)headerTags->Length(); i++) {
-            String::Utf8Value value(Isolate::GetCurrent(), Nan::To<v8::String>(header->Get(headerTags->Get(i))).ToLocalChecked());
+            String::Utf8Value value(Isolate::GetCurrent(), Nan::To<v8::String>(
+                    header->Get(Nan::GetCurrentContext(),
+                                headerTags->Get(Nan::GetCurrentContext(), i).ToLocalChecked()
+                                ).ToLocalChecked()).ToLocalChecked());
             msgHeader.setField(
-                    Nan::To<int32_t>(headerTags->Get(i)).ToChecked(),
+                    Nan::To<int32_t>(headerTags->Get(Nan::GetCurrentContext(), i).ToLocalChecked()).ToChecked(),
 					std::string(*value)
 			);
 		}
@@ -44,15 +47,15 @@ public:
 
 		if(msg->Has(Nan::GetCurrentContext(), tagsKey).ToChecked()) {
 
-			Local<v8::Object> tags = Local<v8::Object>::Cast(msg->Get(tagsKey));
+			Local<v8::Object> tags = Local<v8::Object>::Cast(msg->Get(Nan::GetCurrentContext(), tagsKey).ToLocalChecked());
 
 			Local<v8::Array> msgTags = tags->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 			for(int i=0; i < (int)msgTags->Length(); i++) {
-			    String::Utf8Value value(Isolate::GetCurrent(), Nan::To<v8::String>(tags->Get(msgTags->Get(i))).ToLocalChecked());
+			    String::Utf8Value value(Isolate::GetCurrent(), Nan::To<v8::String>(tags->Get(Nan::GetCurrentContext(), msgTags->Get(Nan::GetCurrentContext(), i).ToLocalChecked()).ToLocalChecked()).ToLocalChecked());
 
 				map->setField(
-						Nan::To<int32_t>(msgTags->Get(i)).ToChecked(),
+						Nan::To<int32_t>(msgTags->Get(Nan::GetCurrentContext(), i).ToLocalChecked()).ToChecked(),
 						std::string(*value)
 				);
 			}
@@ -70,12 +73,12 @@ public:
 		if(msg->Has(Nan::GetCurrentContext(), groupKey).ToChecked()) {
 
 
-			Local<v8::Array> groups = Local<v8::Array>::Cast(msg->Get(groupKey));
+			Local<v8::Array> groups = Local<v8::Array>::Cast(msg->Get(Nan::GetCurrentContext(), groupKey).ToLocalChecked());
 
 			for(int i = 0; i < (int) groups->Length(); i++) {
 
 
-				Local<v8::Object> groupObj = groups->Get(i)->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
+				Local<v8::Object> groupObj = groups->Get(Nan::GetCurrentContext(), i).ToLocalChecked()->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
 
 				Local<v8::String> delimKey = Nan::New<v8::String>("delim").ToLocalChecked();
 				Local<v8::String> indexKey = Nan::New<v8::String>("index").ToLocalChecked();
@@ -95,19 +98,19 @@ public:
 						Nan::ThrowError("no entries property found on object");
 				}
 
-				Local<v8::Array> groupEntries = Local<v8::Array>::Cast(groupObj->Get(entriesKey));
+				Local<v8::Array> groupEntries = Local<v8::Array>::Cast(groupObj->Get(Nan::GetCurrentContext(), entriesKey).ToLocalChecked());
 
 				for (int j = 0; j < (int) groupEntries->Length(); j++) {
 
-					Local<v8::Object> entry = groupEntries->Get(j)->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
+					Local<v8::Object> entry = groupEntries->Get(Nan::GetCurrentContext(), j).ToLocalChecked()->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
 
 					Local<v8::String> tagKey = Nan::New<v8::String>("tags").ToLocalChecked();
 
 					if(entry->Has(Nan::GetCurrentContext(), groupKey).ToChecked() || entry->Has(Nan::GetCurrentContext(), tagKey).ToChecked()) {
 
 						FIX::Group* group = new FIX::Group(
-                            Nan::To<int>(groupObj->Get(indexKey)).ToChecked(),
-                            Nan::To<int>(groupObj->Get(delimKey)).ToChecked());
+                            Nan::To<int>(groupObj->Get(Nan::GetCurrentContext(), indexKey).ToLocalChecked()).ToChecked(),
+                            Nan::To<int>(groupObj->Get(Nan::GetCurrentContext(), delimKey).ToLocalChecked()).ToChecked());
 
 						addFixTags(group, entry);
 						addFixGroups(group, entry);
@@ -119,8 +122,8 @@ public:
 					} else {
 
 						FIX::Group* group = new FIX::Group(
-                                Nan::To<int>(groupObj->Get(indexKey)).ToChecked(),
-                                Nan::To<int>(groupObj->Get(delimKey)).ToChecked());
+                                Nan::To<int>(groupObj->Get(Nan::GetCurrentContext(), indexKey).ToLocalChecked()).ToChecked(),
+                                Nan::To<int>(groupObj->Get(Nan::GetCurrentContext(), delimKey).ToLocalChecked()).ToChecked());
 
 						// compat for old, non-nested format
 
@@ -128,9 +131,9 @@ public:
 
 						for(int k=0; k < (int) entryTags->Length(); k++) {
 
-							Local<v8::String> prop = entryTags->Get(k)->ToString(Nan::GetCurrentContext()).ToLocalChecked();
+							Local<v8::String> prop = entryTags->Get(Nan::GetCurrentContext(), k).ToLocalChecked()->ToString(Nan::GetCurrentContext()).ToLocalChecked();
                             String::Utf8Value keyStr(Isolate::GetCurrent(), Nan::To<v8::String>(prop).ToLocalChecked());
-                            String::Utf8Value valueStr(Isolate::GetCurrent(), Nan::To<v8::String>(entry->Get(prop)).ToLocalChecked());
+                            String::Utf8Value valueStr(Isolate::GetCurrent(), Nan::To<v8::String>(entry->Get(Nan::GetCurrentContext(), prop).ToLocalChecked()).ToLocalChecked());
 
 							group->setField(atoi(std::string(*keyStr).c_str()), std::string(*valueStr));
 
@@ -154,14 +157,14 @@ public:
 
 		if(msg->Has(Nan::GetCurrentContext(), trailerKey).ToChecked()) {
 
-			Local<v8::Object> trailer = Local<v8::Object>::Cast(msg->Get(trailerKey));
+			Local<v8::Object> trailer = Local<v8::Object>::Cast(msg->Get(Nan::GetCurrentContext(), trailerKey).ToLocalChecked());
 			Local<v8::Array> trailerTags = trailer->GetPropertyNames(Nan::GetCurrentContext()).ToLocalChecked();
 
 			for(int i=0; i<(int)trailerTags->Length(); i++) {
 
-				Local<v8::String> prop = trailerTags->Get(i)->ToString(Nan::GetCurrentContext()).ToLocalChecked();
+				Local<v8::String> prop = trailerTags->Get(Nan::GetCurrentContext(), i).ToLocalChecked()->ToString(Nan::GetCurrentContext()).ToLocalChecked();
                 String::Utf8Value keyStr(Isolate::GetCurrent(), Nan::To<v8::String>(prop).ToLocalChecked());
-                String::Utf8Value valueStr(Isolate::GetCurrent(), Nan::To<v8::String>(trailer->Get(prop)).ToLocalChecked());
+                String::Utf8Value valueStr(Isolate::GetCurrent(), Nan::To<v8::String>(trailer->Get(Nan::GetCurrentContext(), prop).ToLocalChecked()).ToLocalChecked());
 
 				msgTrailer.setField(atoi(std::string(*keyStr).c_str()), std::string(*valueStr));
 
@@ -192,7 +195,7 @@ public:
 			header->Set(Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
 		}
 
-		msg->Set(Nan::New<v8::String>("header").ToLocalChecked(), header);
+		msg->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("header").ToLocalChecked(), header);
 	}
 
 	static void addJsTags(Local<v8::Object> msg, const FIX::FieldMap* map) {
@@ -206,7 +209,7 @@ public:
 		}
 
 		if (noTags > 0) {
-			msg->Set(Nan::New<v8::String>("tags").ToLocalChecked(), tags);
+			msg->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("tags").ToLocalChecked(), tags);
 		}
 	}
 
@@ -219,7 +222,7 @@ public:
 			trailer->Set(Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
 		}
 
-		msg->Set(Nan::New<v8::String>("trailer").ToLocalChecked(), trailer);
+		msg->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("trailer").ToLocalChecked(), trailer);
 	}
 
 	static void addJsGroups(Local<v8::Object> msg, const FIX::FieldMap* map) {
@@ -240,18 +243,18 @@ public:
 
 				addJsGroups(groupEntry, fields);
 
-				groupList->Set(i, groupEntry);
+				groupList->Set(Nan::GetCurrentContext(), i, groupEntry);
 
 				i++;
 			}
 
-			groups->Set(Nan::New<Integer>(it->first), groupList);
+			groups->Set(Nan::GetCurrentContext(), Nan::New<Integer>(it->first), groupList);
 
 			noGroups++;
 		}
 
 		if (noGroups > 0) {
-			msg->Set(Nan::New<v8::String>("groups").ToLocalChecked(), groups);
+			msg->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("groups").ToLocalChecked(), groups);
 		}
 	}
 
@@ -270,18 +273,18 @@ public:
 	static Local<Value> sessionIdToJs(const FIX::SessionID* sessionId) {
 		Local<v8::Object> session = Nan::New<v8::Object>();
 
-		session->Set(Nan::New<v8::String>("beginString").ToLocalChecked(), Nan::New<v8::String>(sessionId->getBeginString().getString().c_str()).ToLocalChecked());
-		session->Set(Nan::New<v8::String>("senderCompID").ToLocalChecked(), Nan::New<v8::String>(sessionId->getSenderCompID().getString().c_str()).ToLocalChecked());
-		session->Set(Nan::New<v8::String>("targetCompID").ToLocalChecked(), Nan::New<v8::String>(sessionId->getTargetCompID().getString().c_str()).ToLocalChecked());
-		session->Set(Nan::New<v8::String>("sessionQualifier").ToLocalChecked(), Nan::New<v8::String>(sessionId->getSessionQualifier().c_str()).ToLocalChecked());
+		session->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("beginString").ToLocalChecked(), Nan::New<v8::String>(sessionId->getBeginString().getString().c_str()).ToLocalChecked());
+		session->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("senderCompID").ToLocalChecked(), Nan::New<v8::String>(sessionId->getSenderCompID().getString().c_str()).ToLocalChecked());
+		session->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("targetCompID").ToLocalChecked(), Nan::New<v8::String>(sessionId->getTargetCompID().getString().c_str()).ToLocalChecked());
+		session->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("sessionQualifier").ToLocalChecked(), Nan::New<v8::String>(sessionId->getSessionQualifier().c_str()).ToLocalChecked());
 
 		return session;
 	}
 
 	static FIX::SessionID jsToSessionId(Local<v8::Object> sessionId) {
-        String::Utf8Value beginString(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::New<v8::String>("beginString").ToLocalChecked())).ToLocalChecked());
-        String::Utf8Value senderCompId(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::New<v8::String>("senderCompID").ToLocalChecked())).ToLocalChecked());
-        String::Utf8Value targetCompId(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::New<v8::String>("targetCompID").ToLocalChecked())).ToLocalChecked());
+        String::Utf8Value beginString(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::GetCurrentContext(), Nan::New<v8::String>("beginString").ToLocalChecked()).ToLocalChecked()).ToLocalChecked());
+        String::Utf8Value senderCompId(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::GetCurrentContext(), Nan::New<v8::String>("senderCompID").ToLocalChecked()).ToLocalChecked()).ToLocalChecked());
+        String::Utf8Value targetCompId(Isolate::GetCurrent(), Nan::To<v8::String>(sessionId->Get(Nan::GetCurrentContext(), Nan::New<v8::String>("targetCompID").ToLocalChecked()).ToLocalChecked()).ToLocalChecked());
 		return FIX::SessionID(std::string(*beginString),
 				std::string(*senderCompId),
 				std::string(*targetCompId));
