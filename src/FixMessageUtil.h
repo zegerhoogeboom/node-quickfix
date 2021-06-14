@@ -192,7 +192,7 @@ public:
 
 		for(FIX::FieldMap::const_iterator it = messageHeader.begin(); it != messageHeader.end(); ++it)
 		{
-			header->Set(Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
+			header->Set(Nan::GetCurrentContext(), Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
 		}
 
 		msg->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("header").ToLocalChecked(), header);
@@ -204,7 +204,7 @@ public:
 
 		for(FIX::FieldMap::const_iterator it = map->begin(); it != map->end(); ++it)
 		{
-			tags->Set(Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
+			tags->Set(Nan::GetCurrentContext(), Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
 			noTags++;
 		}
 
@@ -219,7 +219,7 @@ public:
 
 		for(FIX::FieldMap::const_iterator it = messageTrailer.begin(); it != messageTrailer.end(); ++it)
 		{
-			trailer->Set(Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
+			trailer->Set(Nan::GetCurrentContext(), Nan::New<Integer>(it->getTag()), Nan::New<v8::String>(it->getString().c_str()).ToLocalChecked());
 		}
 
 		msg->Set(Nan::GetCurrentContext(), Nan::New<v8::String>("trailer").ToLocalChecked(), trailer);
