@@ -43,7 +43,7 @@ class Dispatcher {
 
             Local<String> eventName = Nan::New<String>(event->eventName.c_str()).ToLocalChecked();
             Local<Object> callbackObj = Nan::New(*event->callbacks);
-            Local<Function> callback = Local<Function>::Cast(callbackObj->Get(eventName));
+            Local<Function> callback = Local<Function>::Cast(callbackObj->Get(Nan::GetCurrentContext(), eventName).ToLocalChecked());
 
             std::vector< Local<Value> > arguments;
             if(event->logon != NULL) {

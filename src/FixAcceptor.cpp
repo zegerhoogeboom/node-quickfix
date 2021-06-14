@@ -214,7 +214,7 @@ NAN_METHOD(FixAcceptor::getSessions) {
 	int i = 0;
 	for(it = sessions.begin(); it != sessions.end(); ++it ){
 		FIX::SessionID id = *it;
-		sessionsArr->Set(i, FixMessageUtil::sessionIdToJs(&id));
+		sessionsArr->Set(Nan::GetCurrentContext(), i, FixMessageUtil::sessionIdToJs(&id));
 		i++;
 	}
 	info.GetReturnValue().Set(sessionsArr);
